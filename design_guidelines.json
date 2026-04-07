@@ -1,0 +1,133 @@
+{
+  "theme": "dark",
+  "archetype": "4",
+  "archetype_name": "Swiss & High-Contrast",
+  "design_philosophy": "Control Room aesthetic. Objective, rigid, and functional. Data is the hero. Use a strict bento grid ('Grid Borders' pattern) exposing the skeleton of the UI. Eliminate unnecessary padding around cards, use 1px sharp borders. High-contrast monochromatic baseline with singular functional accents to guide the user's eye.",
+  "colors": {
+    "background": "#09090B",
+    "surface": "#18181B",
+    "surface_hover": "#27272A",
+    "border": "#27272A",
+    "border_focus": "#F59E0B",
+    "text_primary": "#FFFFFF",
+    "text_secondary": "#A1A1AA",
+    "text_tertiary": "#71717A",
+    "primary": "#F59E0B",
+    "primary_hover": "#D97706",
+    "primary_text": "#000000",
+    "success": "#22C55E",
+    "success_bg": "rgba(34, 197, 94, 0.1)",
+    "warning": "#EAB308",
+    "danger": "#EF4444",
+    "danger_bg": "rgba(239, 68, 68, 0.1)",
+    "chart_palette": [
+      "#F59E0B",
+      "#3B82F6",
+      "#10B981",
+      "#8B5CF6",
+      "#EC4899"
+    ]
+  },
+  "typography": {
+    "heading_font": "Cabinet Grotesk",
+    "body_font": "IBM Plex Sans",
+    "mono_font": "JetBrains Mono",
+    "scale": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl tracking-tighter font-black",
+      "h2": "text-2xl sm:text-3xl lg:text-4xl tracking-tight font-bold",
+      "h3": "text-xl sm:text-2xl tracking-tight font-semibold",
+      "h4": "text-lg sm:text-xl tracking-tight font-medium",
+      "body": "text-base leading-relaxed font-normal",
+      "body_small": "text-sm leading-relaxed font-normal",
+      "label": "text-xs tracking-[0.2em] uppercase font-bold",
+      "data_value": "font-mono text-sm tracking-tight"
+    }
+  },
+  "spacing_and_layout": {
+    "container_padding": "p-6 md:p-8 lg:p-12",
+    "grid_system": "Control Room Grid (Mode B). grid-cols-1 md:grid-cols-3 lg:grid-cols-4. Strict hierarchy, gap-4 to gap-6. Every pixel must be utilized.",
+    "border_radius": "rounded-none",
+    "surface_strategy": "Grid Borders (The 'Technical' Look). Use border-collapse style layouts. Items have border-r border-b border-border/40. No soft shadows. Rely on 1px solid strokes.",
+    "optical_alignment": "Left-align dense content, forms, and tabular data. Top-left F-pattern scanning priority."
+  },
+  "components": {
+    "header": {
+      "style": "Crystal Glassmorphism",
+      "classes": "sticky top-0 z-50 backdrop-blur-xl bg-black/60 border-b border-white/10"
+    },
+    "cards": {
+      "style": "Technical Grid",
+      "classes": "bg-transparent border border-zinc-800 rounded-none hover:border-zinc-700 transition-colors"
+    },
+    "buttons": {
+      "primary": "bg-amber-500 text-black font-bold uppercase tracking-wide rounded-none hover:bg-amber-600 transition-colors active:scale-[0.98]",
+      "secondary": "bg-zinc-900 text-white border border-zinc-800 font-medium rounded-none hover:bg-zinc-800 transition-colors",
+      "ghost": "bg-transparent text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-none transition-colors"
+    },
+    "inputs": {
+      "style": "Terminal Style",
+      "classes": "bg-zinc-900 border border-zinc-800 text-white rounded-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 placeholder:text-zinc-500 font-mono text-sm h-10 px-3"
+    },
+    "tables": {
+      "style": "Dense Data Grid",
+      "classes": "w-full border-collapse text-sm",
+      "header_row": "border-b-2 border-zinc-800 bg-zinc-900/50",
+      "header_cell": "px-4 py-3 text-left font-mono text-xs text-zinc-400 uppercase tracking-wider",
+      "body_row": "border-b border-zinc-800/50 hover:bg-zinc-900/30 transition-colors",
+      "body_cell": "px-4 py-3 text-zinc-300"
+    },
+    "badges": {
+      "style": "High Contrast Status",
+      "classes": "inline-flex items-center px-2 py-0.5 text-xs font-mono font-bold uppercase rounded-none border"
+    }
+  },
+  "icons": {
+    "library": "@phosphor-icons/react",
+    "weight": "regular",
+    "instructions": "Use Phosphor Icons for a technical, crisp look suitable for dense dashboards."
+  },
+  "motion": {
+    "hover_states": "Crisp and instant. Background shifts and border color changes. No bouncy transforms.",
+    "page_transitions": "Fade and slight slide-up (opacity 0 -> 1, y 10 -> 0) using framer-motion.",
+    "loading": "Terminal-style progress bars or glowing indeterminate lines. Avoid generic spinners."
+  },
+  "media": {
+    "images": [
+      {
+        "id": "empty_search_state",
+        "url": "https://static.prod-images.emergentagent.com/jobs/6bac3b8c-4d77-43fa-a9ca-9630f84543ea/images/855f4d2c0db6979587ec567c4cb9c1f7f812c5d0e4b9145ecf7a231edad34865.png",
+        "category": "illustration",
+        "description": "Abstract empty state illustration for the scraper search page before a search is executed."
+      },
+      {
+        "id": "data_nodes_background",
+        "url": "https://static.prod-images.emergentagent.com/jobs/6bac3b8c-4d77-43fa-a9ca-9630f84543ea/images/72f0b10f823b904447ffb21b9217f94bd50624584470a7dda16a0675dd9a8871.png",
+        "category": "background",
+        "description": "Cinematic data nodes background. Use with a heavy dark overlay (e.g., bg-black/80) in the AI Assistant chat tab to give a premium tech feel."
+      },
+      {
+        "id": "neural_network_abstract",
+        "url": "https://images.pexels.com/photos/17485657/pexels-photo-17485657.png?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "category": "hero",
+        "description": "Abstract neural network visualization. Can be used in onboarding modals, login screens, or AI interaction states."
+      }
+    ],
+    "image_usage_rules": "Never use images at full opacity if text sits on top. Always use 'bg-black/80' or a heavy gradient overlay. Images are primarily for textural mood."
+  },
+  "accessibility": {
+    "contrast": "Ensure minimum 4.5:1 ratio for normal text. Use the provided text_primary (#FFFFFF) against background (#09090B).",
+    "focus": "focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 focus-visible:ring-1 focus-visible:ring-amber-500 on all interactive elements.",
+    "test_ids": "Every button, input, tab, and row MUST have a data-testid attribute formatted as kebab-case role-based (e.g., 'data-testid=\"search-submit-button\"')."
+  },
+  "instructions_to_main_agent": [
+    "You are building a 'Control Room' style SaaS dashboard for a Business Intelligence Scraper.",
+    "Do NOT use 'Inter' font. Implement Cabinet Grotesk for headings, IBM Plex Sans for body, and JetBrains Mono for data points/tables.",
+    "Ensure the UI uses 'rounded-none' for sharp, brutalist, technical edges.",
+    "Implement Shadcn UI heavily, but strip out the soft Vercel shadows and rounded borders. Replace them with strict 1px solid borders (border-zinc-800).",
+    "For the two main tabs (Scraper & AI Assistant), use Shadcn Tabs but style them like terminal tabs or command palettes.",
+    "When integrating Apify and displaying results, prioritize density. Use the 'Grid Borders' strategy for the results cards or display them in a dense table layout.",
+    "Implement data-testid attributes universally for testing reliability.",
+    "Use Phosphor Icons (yarn add @phosphor-icons/react).",
+    "Do NOT add decorative gradients. The UI should be 95% grayscale with the primary color (Electric Amber #F59E0B) used strictly for actions and status indicators."
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "scraper-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:web": "cd apps/web-app && npm run dev",
+    "dev:api": "cd apps/api && ../../.venv/bin/python main.py",
+    "dev": "npm run dev:web",
+    "install:all": "cd apps/web-app && npm install && cd ../api && pip install -r requirements.txt"
+  }
+}
