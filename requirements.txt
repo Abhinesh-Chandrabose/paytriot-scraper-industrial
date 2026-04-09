@@ -1,0 +1,2 @@
+-r apps/api/requirements.txt
+feedparser==6.0.11
