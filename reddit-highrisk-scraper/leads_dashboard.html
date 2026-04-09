@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reddit High-Risk Lead Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #10b981;
+            --risk-high: #ef4444;
+            --risk-mid: #f59e0b;
+            --risk-low: #10b981;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--card-bg);
+            padding-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        input, select {
+            background: var(--card-bg);
+            border: 1px solid #334155;
+            color: var(--text);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            outline: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card-bg);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+        }
+
+        th {
+            background: #2d3748;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        tr:hover {
+            background: #2d3748;
+        }
+
+        .score-pill {
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .score-high { background: rgba(239, 68, 68, 0.2); color: var(--risk-high); }
+        .score-mid { background: rgba(245, 158, 11, 0.2); color: var(--risk-mid); }
+        .score-low { background: rgba(16, 185, 129, 0.2); color: var(--risk-low); }
+
+        .btn-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Reddit Lead Dashboard</h1>
+            <div id="status">Ready</div>
+        </header>
+
+        <div class="controls">
+            <input type="text" id="searchInput" placeholder="Search leads..." onkeyup="filterTable()">
+            <select id="scoreFilter" onchange="filterTable()">
+                <option value="0">Min Score: 0</option>
+                <option value="50">Min Score: 50</option>
+                <option value="75">Min Score: 75</option>
+                <option value="90">Min Score: 90</option>
+            </select>
+            <input type="file" id="csvFile" accept=".csv" style="display: none;" onchange="loadLocalFile(event)">
+            <button onclick="document.getElementById('csvFile').click()" style="background: var(--primary); color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer;">Load CSV</button>
+        </div>
+
+        <table id="leadsTable">
+            <thead>
+                <tr>
+                    <th>Score</th>
+                    <th>Author</th>
+                    <th>Contact Info</th>
+                    <th>Subreddit</th>
+                    <th>Snippet/Title</th>
+                    <th>URL</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Data will be loaded here -->
+            </tbody>
+        </table>
+        <div id="emptyState" class="empty-state">No data loaded. Please run the scraper and load the CSV.</div>
+    </div>
+
+    <script>
+        let allData = [];
+
+        function loadLocalFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            Papa.parse(file, {
+                header: true,
+                complete: function(results) {
+                    allData = results.data;
+                    renderTable(allData);
+                    document.getElementById('status').innerText = `Loaded ${allData.length} leads`;
+                    document.getElementById('emptyState').style.display = 'none';
+                }
+            });
+        }
+
+        function getScoreClass(score) {
+            if (score >= 75) return 'score-high';
+            if (score >= 40) return 'score-mid';
+            return 'score-low';
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            data.forEach(row => {
+                if (!row.author) return;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><span class="score-pill ${getScoreClass(row.lead_score)}">${row.lead_score || 'N/A'}</span></td>
+                    <td>${row.author}</td>
+                    <td>${row.contact_info || '<span style="color:#475569">None</span>'}</td>
+                    <td>${row.subreddit || 'N/A'}</td>
+                    <td>${row.post_title || row.snippet || ''}</td>
+                    <td><a href="${row.post_url}" target="_blank" class="btn-link">View Post</a></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const minScore = parseInt(document.getElementById('scoreFilter').value);
+
+            const filtered = allData.filter(row => {
+                const matchesSearch = Object.values(row).some(val => String(val).toLowerCase().includes(searchTerm));
+                const matchesScore = parseInt(row.lead_score || 0) >= minScore;
+                return matchesSearch && matchesScore;
+            });
+
+            renderTable(filtered);
+        }
+    </script>
+</body>
+</html>

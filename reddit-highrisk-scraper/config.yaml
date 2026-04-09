@@ -1,0 +1,40 @@
+# Reddit API Credentials
+# Replace these with your actual credentials from reddit.com/prefs/apps
+reddit:
+  client_id: ""  # Use REDDIT_CLIENT_ID env var
+  client_secret: ""  # Use REDDIT_CLIENT_SECRET env var
+  user_agent: "reddit-highrisk-scraper v1.0"  # Use REDDIT_USER_AGENT env var
+
+# Scraper Settings
+settings:
+  subreddits: 
+    - highriskinvestments
+    - pennystock
+    - cryptocurrency
+    - bitcoinmarkets
+    - wallstreetbets
+    - options
+  limit: 100
+  rate_limit_delay: 0.5  # 2 req/sec
+  random_jitter: [1, 3] # seconds
+  db_name: "leads.db"
+  csv_name: "highrisk_leads.csv"
+
+# Keywords for Scoring
+keywords:
+  high_risk:
+    - startup
+    - funding
+    - VC
+    - investment
+    - crypto
+    - "penny stock"
+    - high risk
+    - moonshot
+  lead_intent:
+    - "DM me"
+    - email
+    - invest
+    - partner
+    - business
+    - contact

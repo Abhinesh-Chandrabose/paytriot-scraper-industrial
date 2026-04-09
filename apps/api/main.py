@@ -19,6 +19,11 @@ from datetime import datetime, date, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# ── Load env (Bun/dotenv auto-loads; this covers plain Python runs) ──────────
+from dotenv import load_dotenv
+ROOT_DIR = Path(__file__).parent.parent.parent
+load_dotenv(ROOT_DIR / ".env")
+
 # ── FastAPI / Pydantic ──────────────────────────────────────────────────────
 from fastapi import FastAPI, APIRouter, HTTPException, Depends
 from fastapi.responses import StreamingResponse
@@ -29,7 +34,6 @@ from starlette.middleware.cors import CORSMiddleware
 from supabase import create_client, Client
 
 # ── Path resolution (must happen before local imports) ──────────────────────
-ROOT_DIR = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR))
 sys.path.insert(0, str(ROOT_DIR / "apps" / "api"))
 
@@ -41,10 +45,6 @@ from skills.ai.gemini_refiner import GeminiRefiner
 from skills.ai.claude_finalizer import ClaudeFinalizer
 from skills.monitor.reddit_skill import run_reddit_monitor
 from skills.monitor.telegram_skill import run_telegram_monitor
-
-# ── Load env (Bun/dotenv auto-loads; this covers plain Python runs) ──────────
-from dotenv import load_dotenv
-load_dotenv(ROOT_DIR / ".env")
 
 # ═══════════════════════════════════════════════════════════════════════════
 # Module 6 — Structured JSON Logging
@@ -97,11 +97,15 @@ logger = _setup_logging()
 _supabase_url = os.getenv("SUPABASE_URL")
 _supabase_key = os.getenv("SUPABASE_KEY")
 
+db: Optional[Client] = None
 if not _supabase_url or not _supabase_key:
     logger.warning("SUPABASE_URL or SUPABASE_KEY missing — database features disabled")
-    db: Optional[Client] = None
 else:
-    db: Client = create_client(_supabase_url, _supabase_key)
+    try:
+        db = create_client(_supabase_url, _supabase_key)
+    except Exception as exc:
+        logger.warning(f"Supabase connection failed: {exc}. Database features disabled.")
+        db = None
 
 # ═══════════════════════════════════════════════════════════════════════════
 # Background task lifecycle
@@ -243,7 +247,11 @@ async def bulk_save(records: List[BusinessRecord]):
         return {"success": False, "error": "Database not configured"}
     docs = [r.model_dump() for r in records]
     if docs:
-        db.table("businesses").insert(docs).execute()
+        try:
+            db.table("businesses").insert(docs).execute()
+        except Exception as exc:
+            logger.error(f"Supabase bulk insert failed: {exc}")
+            raise HTTPException(status_code=500, detail=str(exc))
     return {"success": True, "count": len(docs)}
 
 

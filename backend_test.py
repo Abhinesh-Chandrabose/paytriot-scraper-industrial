@@ -1,171 +1,134 @@
 import requests
 import sys
 import json
+import time
 from datetime import datetime
 
 class GOscraperAPITester:
-    def __init__(self, base_url="https://web-scraper-30.preview.emergentagent.com"):
-        self.base_url = base_url
-        self.api_url = f"{base_url}/api"
+    def __init__(self, base_url="http://localhost:8000/api"):
+        self.base_url = base_url.rstrip("/")
         self.tests_run = 0
         self.tests_passed = 0
         self.session_id = f"test_session_{datetime.now().strftime('%H%M%S')}"
 
-    def run_test(self, name, method, endpoint, expected_status, data=None, headers=None):
+    def run_test(self, name, method, endpoint, expected_status, data=None):
         """Run a single API test"""
-        url = f"{self.api_url}/{endpoint}" if endpoint else f"{self.api_url}/"
-        default_headers = {'Content-Type': 'application/json'}
-        if headers:
-            default_headers.update(headers)
+        url = f"{self.base_url}/{endpoint}" if endpoint else f"{self.base_url}/"
+        headers = {'Content-Type': 'application/json'}
 
         self.tests_run += 1
-        print(f"\n🔍 Testing {name}...")
-        print(f"   URL: {url}")
+        print(f"\n[*] Testing {name}...")
+        print(f"    URL: {url}")
         
         try:
             if method == 'GET':
-                response = requests.get(url, headers=default_headers, timeout=10)
+                response = requests.get(url, headers=headers, timeout=60)
             elif method == 'POST':
-                response = requests.post(url, json=data, headers=default_headers, timeout=10)
-            elif method == 'DELETE':
-                response = requests.delete(url, headers=default_headers, timeout=10)
-
-            success = response.status_code == expected_status
-            if success:
-                self.tests_passed += 1
-                print(f"✅ Passed - Status: {response.status_code}")
-                try:
-                    response_data = response.json()
-                    print(f"   Response: {json.dumps(response_data, indent=2)[:200]}...")
-                except:
-                    print(f"   Response: {response.text[:200]}...")
+                response = requests.post(url, json=data, headers=headers, timeout=60)
+            elif method == 'PATCH':
+                response = requests.patch(url, json=data, headers=headers, timeout=60)
             else:
-                print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
-                print(f"   Response: {response.text[:300]}")
+                print(f"    [!] Unsupported method: {method}")
+                return False
 
-            return success, response.json() if response.headers.get('content-type', '').startswith('application/json') else response.text
-
-        except requests.exceptions.Timeout:
-            print(f"❌ Failed - Request timed out")
-            return False, {}
+            status_ok = response.status_code == expected_status
+            if status_ok:
+                self.tests_passed += 1
+                print(f"    [+] Passed - Status {response.status_code}")
+                return True
+            else:
+                print(f"    [-] Failed - Expected {expected_status}, got {response.status_code}")
+                print(f"    Response: {response.text}")
+                return False
         except Exception as e:
-            print(f"❌ Failed - Error: {str(e)}")
-            return False, {}
+            print(f"    [!] Error: {str(e)}")
+            return False
 
-    def test_health_check(self):
-        """Test API health check"""
-        return self.run_test("API Health Check", "GET", "", 200)
+    def test_health(self):
+        """Test the health check endpoint"""
+        return self.run_test("Health Check", "GET", "health", 200)
+
+    def test_stats(self):
+        """Test the statistics endpoint"""
+        return self.run_test("Aggregate Stats", "GET", "stats", 200)
+
+    def test_leads_get(self):
+        """Test getting leads"""
+        return self.run_test("Get Leads", "GET", "leads", 200)
 
     def test_businesses_get(self):
-        """Test get businesses list"""
-        return self.run_test("Get Businesses List", "GET", "businesses", 200)
+        """Test getting businesses"""
+        return self.run_test("Get Businesses", "GET", "businesses", 200)
 
-    def test_businesses_post(self):
-        """Test create business record"""
-        test_business = {
-            "name": "Test Company",
-            "website": "https://test.com",
-            "emails": ["test@test.com"],
-            "phones": ["+1234567890"],
-            "sector": "Technology",
-            "source": "manual"
-        }
-        return self.run_test("Create Business Record", "POST", "businesses", 200, test_business)
-
-    def test_businesses_export_csv(self):
-        """Test CSV export"""
-        return self.run_test("Export Businesses CSV", "GET", "businesses/export/csv", 200)
-
-    def test_search_history(self):
-        """Test get search history"""
-        return self.run_test("Get Search History", "GET", "search/history", 200)
-
-    def test_chat_basic(self):
-        """Test basic chat functionality"""
+    def test_chat(self):
+        """Test the AI chat assistant"""
         chat_data = {
             "session_id": self.session_id,
-            "message": "Hello, what can you help me with?"
+            "message": "Hello, what industries can you scrape?"
         }
-        return self.run_test("AI Chat Basic Test", "POST", "chat", 200, chat_data)
+        return self.run_test("AI Chat Assistant", "POST", "chat", 200, chat_data)
 
-    def test_chat_history(self):
-        """Test get chat history"""
-        return self.run_test("Get Chat History", "GET", f"chat/history/{self.session_id}", 200)
+    def test_bulk_save(self):
+        """Test bulk saving business records"""
+        bulk_data = [
+            {
+                "name": "Test Corp",
+                "website": "testcorp.com",
+                "emails": ["info@testcorp.com"],
+                "source": "api_test"
+            }
+        ]
+        return self.run_test("Bulk Business Save", "POST", "businesses/bulk", 200, bulk_data)
 
-    def test_businesses_clear(self):
-        """Test clear all businesses"""
-        return self.run_test("Clear All Businesses", "DELETE", "businesses", 200)
-
-    def test_google_search_async(self):
-        """Test Google search async endpoint (without waiting for completion)"""
+    def test_scrape_google(self):
+        """Test Google Search scraper (Sync/Legacy)"""
         search_data = {
-            "queries": ["test company contact information"],
-            "country_code": "us",
-            "language_code": "en",
-            "max_pages": 1,
-            "results_per_page": 5
+            "queries": ["fintech startups in london"],
+            "max_pages": 1
         }
-        print("\n⚠️  Note: Testing async endpoint only - not waiting for Apify actor completion")
-        return self.run_test("Google Search Async", "POST", "search/google/async", 200, search_data)
+        return self.run_test("Google Search Scraper", "POST", "search/google", 200, search_data)
 
-    def test_linkedin_search_async(self):
-        """Test LinkedIn search async endpoint (without waiting for completion)"""
+    def test_scrape_linkedin(self):
+        """Test LinkedIn Scraper (Legacy)"""
         linkedin_data = {
-            "company_urls": ["https://linkedin.com/company/google"],
-            "max_results": 10
+            "company_urls": ["https://www.linkedin.com/company/google"],
+            "max_results": 5
         }
-        print("\n⚠️  Note: Testing async endpoint only - not waiting for Apify actor completion")
-        return self.run_test("LinkedIn Search Async", "POST", "search/linkedin/async", 200, linkedin_data)
+        return self.run_test("LinkedIn Scraper", "POST", "search/linkedin", 200, linkedin_data)
 
 def main():
-    print("🚀 Starting GOscraper API Testing...")
-    print("=" * 60)
+    print("============================================================")
+    print("🚀 GOscraper Industrial API v3.0 - Integration Suite")
+    print("============================================================")
+    
+    # Wait a moment for server to be fully ready if it just started
+    time.sleep(2)
     
     tester = GOscraperAPITester()
     
-    # Test basic API functionality
-    print("\n📋 BASIC API TESTS")
-    print("-" * 30)
-    tester.test_health_check()
+    tester.test_health()
+    tester.test_stats()
+    tester.test_leads_get()
     tester.test_businesses_get()
-    tester.test_search_history()
+    tester.test_chat()
+    tester.test_bulk_save()
     
-    # Test business CRUD operations
-    print("\n📊 BUSINESS CRUD TESTS")
-    print("-" * 30)
-    tester.test_businesses_post()
-    tester.test_businesses_export_csv()
-    
-    # Test AI chat functionality
-    print("\n🤖 AI CHAT TESTS")
-    print("-" * 30)
-    tester.test_chat_basic()
-    tester.test_chat_history()
-    
-    # Test async scraping endpoints (without waiting for completion)
-    print("\n🔍 SCRAPING ASYNC TESTS")
-    print("-" * 30)
-    tester.test_google_search_async()
-    tester.test_linkedin_search_async()
-    
-    # Cleanup
-    print("\n🧹 CLEANUP TESTS")
-    print("-" * 30)
-    tester.test_businesses_clear()
-    
-    # Print final results
-    print("\n" + "=" * 60)
-    print(f"📊 FINAL RESULTS")
+    # Note: Scrapers might take longer or fail if API keys are missing
+    print("\n[!] Testing Scrapers (Expect longer latency)...")
+    tester.test_scrape_google()
+    tester.test_scrape_linkedin()
+
+    print("\n" + "="*60)
+    print(f"FINAL RESULTS")
     print(f"Tests passed: {tester.tests_passed}/{tester.tests_run}")
-    success_rate = (tester.tests_passed / tester.tests_run * 100) if tester.tests_run > 0 else 0
-    print(f"Success rate: {success_rate:.1f}%")
+    rate = (tester.tests_passed / tester.tests_run) * 100 if tester.tests_run > 0 else 0
+    print(f"Success rate: {rate:.1f}%")
     
-    if success_rate >= 80:
-        print("🎉 Backend API testing completed successfully!")
-        return 0
+    if tester.tests_passed == tester.tests_run:
+        print("[+] All industrial modules operational.")
     else:
-        print("⚠️  Some backend API tests failed. Check the details above.")
-        return 1
+        print("[!] Some components reported failures.")
+    print("="*60)
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

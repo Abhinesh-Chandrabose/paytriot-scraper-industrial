@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(.venv/bin/python:*)"
+      "Bash(.venv/bin/python:*)",
+      "Bash(pip install:*)",
+      "Bash(python scraper.py --limit 10 --time week)",
+      "Bash(python -c \"from skills.monitor.reddit_skill import RedditSkill; print\\('Import successful'\\)\")",
+      "Bash(python:*)",
+      "Bash(curl -s http://localhost:8000/api/health)"
     ]
   }
 }

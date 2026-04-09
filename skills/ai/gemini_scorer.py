@@ -29,7 +29,7 @@ class GeminiScorer:
         self._init_openrouter()
 
     def _init_gemini(self):
-        key = os.getenv("GEMINI_API_KEY")
+        key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
         if key:
             # Modern SDK uses the Client object
             self.client = genai.Client(api_key=key)
